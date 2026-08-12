@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jawetz 28e - Chapter 2: Cell Structure | Interactive Medical Database</title>
+  
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              bg: '#090d16',
+              card: 'rgba(15, 23, 42, 0.75)',
+              border: 'rgba(51, 65, 85, 0.6)',
+              cyan: '#06b6d4',
+              emerald: '#10b981',
+              indigo: '#6366f1',
+              purple: '#8b5cf6',
+              amber: '#f59e0b',
+              rose: '#f43f5e'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            arabic: ['Tajawal', 'sans-serif'],
+            mono: ['Fira Code', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #090d16;
+      color: #f1f5f9;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Custom Glassmorphism Card */
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    
+    .glass-card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card-hover:hover {
+      border-color: rgba(6, 182, 212, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px 0 rgba(6, 182, 212, 0.15);
+    }
+
+    /* Interactive Scientific Term Styling */
+    .sci-term {
+      position: relative;
+      color: #38bdf8;
+      font-weight: 600;
+      border-bottom: 2px dashed #0284c7;
+      padding-bottom: 1px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+    
+    .sci-term:hover {
+      color: #38bdf8;
+      background-color: rgba(56, 189, 248, 0.15);
+      border-bottom-color: #38bdf8;
+      border-radius: 4px;
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+
+    /* Modal Animation */
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-modal {
+      animation: modalFadeIn 0.25s ease-out forwards;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    /* Active Tab Indicator */
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(99, 102, 241, 0.2));
+      border-color: #06b6d4;
+      color: #38bdf8;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+  <!-- TOP HEADER & BRANDING -->
+  <header class="sticky top-0 z-40 glass-card border-b border-slate-800 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-cyan-500/20">
+          <i class="fa-solid fa-bacteria"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            Jawetz, Melnick & Adelberg's Medical Microbiology
+            <span class="text-xs bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full font-mono">28th Edition</span>
+          </h1>
+          <p class="text-xs text-slate-400">Chapter 2: Cell Structure | Full Interactive Database & Multi-Tab Web App</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Translation Mode Badge -->
+        <button id="toggle-click-translate" onclick="toggleFreeTranslateMode()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-300 flex items-center gap-2 transition">
+          <i class="fa-solid fa-language text-cyan-400"></i>
+          <span>Arabic Translation Mode: <strong id="translate-mode-status" class="text-emerald-400">Active</strong></span>
+        </button>
+
+        <!-- Search Button -->
+        <button onclick="switchTab('tab-glossary')" class="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-semibold text-cyan-400 flex items-center gap-2 transition">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span>Search Glossary</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN NAVIGATION TABS -->
+  <nav class="bg-slate-950/80 border-b border-slate-800/80 px-6 py-3 sticky top-[73px] z-30 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto flex overflow-x-auto gap-2 scrollbar-none pb-1">
+      <button onclick="switchTab('tab-optical')" id="btn-tab-optical" class="tab-btn active px-4 py-2.5 rounded-xl border border-slate-800 text-xs font-bold text-slate-400 whitespace-nowrap transition flex items-center gap-2">
+        <i class="fa-solid fa-microscope text-cyan-400"></i>
+        1. Optical Methods & Microscopy
+      </button>
+
+      <button onclick="switchTab('tab-comparison')" id="btn-tab-comparison" class="tab-btn px-4 py-2.5 rounded-xl border border-slate-800 text-xs font-bold text-slate-400 whitespace-nowrap transition flex items-center gap-2">
+        <i class="fa-solid fa-code-compare text-indigo-400"></i>
+        2. Eukaryotes vs Prokaryotes
+      </button>
+
+      <button onclick="switchTab('tab-envelope')" id="btn-tab-envelope" class="tab-btn px-4 py-2.5 rounded-xl border border-slate-800 text-xs font-bold text-slate-400 whitespace-nowrap transition flex items-center gap-2">
+        <i class="fa-solid fa-layer-group text-emerald-400"></i>
+        3. Prokaryotic Cell Envelope & Wall
+      </button>
+
+      <button onclick="switchTab('tab-appendages')" id="btn-tab-appendages" class="tab-btn px-4 py-2.5 rounded-xl border border-slate-800 text-xs font-bold text-slate-400 whitespace-nowrap transition flex items-center gap-2">
+        <i class="fa-solid fa-dna text-purple-400"></i>
+        4. Internal Structures & Appendages
+      </button>
+
+      <button onclick="switchTab('tab-staining')" id="btn-tab-staining" class="tab-btn px-4 py-2.5 rounded-xl border border-slate-800 text-xs font-bold text-slate-400 whitespace-nowrap transition flex items-center gap-2">
+        <i class="fa-solid fa-vial text-rose-400"></i>
+        5. Staining Methods & Growth
+      </button>
+
+      <button onclick="switchTab('tab-glossary')" id="btn-tab-glossary" class="tab-btn px-4 py-2.5 rounded-xl border border-slate-800 text-xs font-bold text-slate-400 whitespace-nowrap transition flex items-center gap-2">
+        <i class="fa-solid fa-book-bookmark text-amber-400"></i>
+        6. Full Arabic Medical Glossary
+      </button>
+    </div>
+  </nav>
+
+  <!-- CONTENT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-8">
+
+    <!-- TAB 1: OPTICAL METHODS & MICROSCOPY -->
+    <section id="tab-optical" class="tab-content space-y-8">
+      
+      <!-- HERO BANNER -->
+      <div class="glass-card p-8 rounded-3xl border border-cyan-500/20 bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950/40 relative overflow-hidden">
+        <div class="max-w-3xl space-y-3 relative z-10">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-lightbulb"></i> Section 1: Optical Methods
+          </div>
+          <h2 class="text-3xl font-extrabold text-white">Microscopy & Examination Techniques in Microbiology</h2>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            Because microorganisms are invisible to the naked eye, microscopy is fundamental to microbiology. Understanding cell structure requires specialized optical tools ranging from standard 
+            <span class="sci-term" data-ar="المجهر الضوئي الذو الميدان المشرق" data-desc="مجهر يستخدم الضوء المرئي المباشر لإضاءة العينات وتكبيرها حتى 1000 مرة، وهو الأكثر شيوعاً في الفحوصات الطبية الروتينية.">light microscopy</span> 
+            to high-resolution 
+            <span class="sci-term" data-ar="المجهر الإلكتروني" data-desc="مجهر يستبدل الضوء بحزمة إلكترونات والعدسات الزجاجية بملفات كهرومغناطيسية لتحقيق تكبير يصل إلى ملايين المرات بدقة نانومترية.">electron microscopy</span> 
+            and 
+            <span class="sci-term" data-ar="مجهر القوة الذرية" data-desc="مجهر مسبار ماسح يقيس القوى الفيزيائية الميكانيكية الدقيقة بين رأس المسبار الذري وسطح العينة لإنشاء صورة ثلاثية الأبعاد بوضوح ذري.">atomic force microscopy</span>.
+          </p>
+        </div>
+      </div>
+
+      <!-- GRID OF MICROSCOPY TYPES -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Bright-Field -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl space-y-3 border-t-4 border-t-cyan-500">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-lg text-cyan-300">Bright-Field Microscope</h3>
+            <span class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 text-sm"><i class="fa-solid fa-sun"></i></span>
+          </div>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            The standard <span class="sci-term" data-ar="المجهر المركب" data-desc="أداة بصرية تستخدم عدستين متتاليتين (الشيئية والعينية) لتكبير عينات الأحياء الدقيقة.">compound microscope</span>. The specimen is visualized because of differences in contrast between the organism and the surrounding medium. Dyes and stains are typically required to visualize bacterial morphology.
+          </p>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] space-y-1 font-mono text-slate-400">
+            <div><strong class="text-cyan-400">Resolution:</strong> ~0.2 µm</div>
+            <div><strong class="text-cyan-400">Max Magnification:</strong> 1000x - 2000x</div>
+            <div><strong class="text-cyan-400">Primary Use:</strong> Stained bacteria, fungi, parasites</div>
+          </div>
+        </div>
+
+        <!-- Dark-Field -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl space-y-3 border-t-4 border-t-indigo-500">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-lg text-indigo-300">Dark-Field Microscope</h3>
+            <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 text-sm"><i class="fa-solid fa-moon"></i></span>
+          </div>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Utilizes a special <span class="sci-term" data-ar="مكثف الميدان المظلم" data-desc="عدسة خاصة تمنع الضوء المباشر من دخول العدسة الشيئية، فتظهر العينة مضاءة بوضوح فوق خلفية سوداء مظلمة.">dark-field condenser</span> that blocks direct light. Only light scattered by the specimen enters the objective lens, producing a bright image on a dark background.
+          </p>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] space-y-1 font-mono text-slate-400">
+            <div><strong class="text-indigo-400">Key Advantage:</strong> Live unstained cells</div>
+            <div><strong class="text-indigo-400">Clinical Application:</strong> Detection of <span class="sci-term" data-ar="اللولبية الشاحبة (بكتيريا الزهري)" data-desc="بكتيريا حلزونية دقيقة جداً تعجز المجاهر الضوئية العادية عن رؤيتها، ويتم تشخيصها بمجهر الميدان المظلم.">Treponema pallidum</span></div>
+          </div>
+        </div>
+
+        <!-- Phase-Contrast -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl space-y-3 border-t-4 border-t-emerald-500">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-lg text-emerald-300">Phase-Contrast Microscope</h3>
+            <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 text-sm"><i class="fa-solid fa-sliders"></i></span>
+          </div>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Capitalizes on differences in <span class="sci-term" data-ar="معامل الانكسار" data-desc="مقاس درجة انحناء الضوء عند مروره عبر أجزاء الخلية المختلفة كالنواة والجرثومة بالمقارنة مع الماء.">refractive index</span> between cellular structures and water. Converts subtle phase differences in light rays into visible amplitude changes (brightness differences).
+          </p>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] space-y-1 font-mono text-slate-400">
+            <div><strong class="text-emerald-400">Key Advantage:</strong> Internal structure of living cells</div>
+            <div><strong class="text-emerald-400">Features Observed:</strong> Endospores, inclusions, vacuoles</div>
+          </div>
+        </div>
+
+        <!-- Fluorescence -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl space-y-3 border-t-4 border-t-purple-500">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-lg text-purple-300">Fluorescence Microscope</h3>
+            <span class="p-2 rounded-lg bg-purple-500/10 text-purple-400 text-sm"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+          </div>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Exposes specimens to high-energy ultraviolet light, causing <span class="sci-term" data-ar="الصبغات المتألقة (فلوروفور)" data-desc="مركبات كيميائية تمتص الضوء بوفق طول موجي قصير وتطلق ضوءاً متألقاً بطول موجي أطول.">fluorochromes</span> (like auramine O or fluorescein) to emit visible light. Used heavily in <span class="sci-term" data-ar="الفحص المناعي المتألق" data-desc="تقنية ربط الأجسام المضادة بصبغة تألقية للكشف عن جينات أو بروتينات الميكروبات بدقة عالية.">immunofluorescence</span>.
+          </p>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] space-y-1 font-mono text-slate-400">
+            <div><strong class="text-purple-400">Clinical Use:</strong> Rapid detection of <span class="sci-term" data-ar="المتفطرة السلية" data-desc="بكتيريا عصوية مسببة لمرض السل الرئوي وتظهر ملونة بالصبغات التألقية.">Mycobacterium tuberculosis</span></div>
+          </div>
+        </div>
+
+        <!-- Confocal -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl space-y-3 border-t-4 border-t-amber-500">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-lg text-amber-300">Confocal Laser Microscope</h3>
+            <span class="p-2 rounded-lg bg-amber-500/10 text-amber-400 text-sm"><i class="fa-solid fa-cubes"></i></span>
+          </div>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Uses a focused laser beam and pinhole aperture to scan thin optical sections of thick specimens, eliminating out-of-focus blur. Reconstructs sharp 3D images of complex microbial communities like <span class="sci-term" data-ar="الغشاء الحيوي (بيوفلم)" data-desc="مجتمعات بكتيرية مغلفة بمادة هلامية تلتصق بالأسطح الحيوية والأجهزة الطبية وتقاوم المضادات الحيوية.">biofilms</span>.
+          </p>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] space-y-1 font-mono text-slate-400">
+            <div><strong class="text-amber-400">Key Advantage:</strong> 3D optical sectioning</div>
+          </div>
+        </div>
+
+        <!-- Electron Microscopy -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl space-y-3 border-t-4 border-t-rose-500">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-lg text-rose-300">Electron Microscopy (TEM & SEM)</h3>
+            <span class="p-2 rounded-lg bg-rose-500/10 text-rose-400 text-sm"><i class="fa-solid fa-atom"></i></span>
+          </div>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Replaces light with electron beams (wavelength ~0.005 nm). 
+            <span class="sci-term" data-ar="مجهر نفاذ الإلكترونات (TEM)" data-desc="يمرر حزمة إلكترونات عبر مقاطع خلية رقيقة جداً لعرض العضيات والتركيب الداخلي بدقة 0.001 نانومتر.">Transmission Electron Microscopy (TEM)</span> views ultra-thin internal sections. 
+            <span class="sci-term" data-ar="مجهر المسح الإلكتروني (SEM)" data-desc="يمسح سطح العينة بالكامل بحزمة إلكترونات لإنتاج صور ثلاثية الأبعاد ذات جودة فائقة للأسطح الخارجية.">Scanning Electron Microscopy (SEM)</span> renders 3D surface topography.
+          </p>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] space-y-1 font-mono text-slate-400">
+            <div><strong class="text-rose-400">Resolution TEM:</strong> ~0.001 µm (0.1 nm)</div>
+            <div><strong class="text-rose-400">Primary Use:</strong> Viruses, cell ultrastructure</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- TAB 2: EUKARYOTES VS PROKARYOTES -->
+    <section id="tab-comparison" class="tab-content hidden space-y-8">
+      
+      <div class="glass-card p-8 rounded-3xl border border-indigo-500/20 bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40">
+        <div class="max-w-3xl space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-scale-balanced"></i> Section 2: Cellular Architecture
+          </div>
+          <h2 class="text-3xl font-extrabold text-white">Eukaryotic vs Prokaryotic Cell Organization</h2>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            All living cells are classified as either 
+            <span class="sci-term" data-ar="حقيقيات النواة" data-desc="خلايا معقدة تحتوي على نواة حقيقية محاطة بغشاء نووي وعضيات خلوية متخصصة كالميتوكندريا وجهاز جولجي.">eukaryotic</span> 
+            or 
+            <span class="sci-term" data-ar="بدائيات النواة" data-desc="خلايا بسيطة تفتقر إلى غشاء نووي وعضيات مغلفة بأغشية، ويقع حمضها النووي المزدوج مباشرة في الهيولى.">prokaryotic</span>. 
+            Bacteria and Archaea are prokaryotes, while fungi, protozoa, plants, and animals are eukaryotes.
+          </p>
+        </div>
+      </div>
+
+      <!-- COMPARISON TABLE -->
+      <div class="glass-card rounded-2xl overflow-hidden border border-slate-800">
+        <div class="p-5 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between">
+          <h3 class="font-bold text-base text-white flex items-center gap-2">
+            <i class="fa-solid fa-table-list text-indigo-400"></i> Structural & Biochemical Comparison
+          </h3>
+          <span class="text-xs font-mono text-slate-400">Jawetz Microbiology 28e Table 2-1</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950 text-slate-400 uppercase font-mono border-b border-slate-800">
+              <tr>
+                <th class="p-4">Characteristic</th>
+                <th class="p-4 text-cyan-400">Prokaryotic Cells (Bacteria)</th>
+                <th class="p-4 text-purple-400">Eukaryotic Cells (Fungi, Human)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/60 text-slate-300">
+              <tr class="hover:bg-slate-900/50 transition">
+                <td class="p-4 font-bold text-white">Nucleus & Membrane</td>
+                <td class="p-4">No nuclear membrane; single circular <span class="sci-term" data-ar="المنطقة النووية (نوييد)" data-desc="منطقة كئيبة غير مغلفة بغشاء في هيولى البكتيريا تحتوي على الكروموسوم البكتيري الدائري.">nucleoid</span>.</td>
+                <td class="p-4">True membrane-bound nucleus with nucleolus & linear chromosomes.</td>
+              </tr>
+
+              <tr class="hover:bg-slate-900/50 transition">
+                <td class="p-4 font-bold text-white">Membrane-Bound Organelles</td>
+                <td class="p-4"><strong class="text-rose-400">Absent</strong> (No mitochondria, ER, or Golgi).</td>
+                <td class="p-4"><strong class="text-emerald-400">Present</strong> (Mitochondria, ER, Golgi apparatus, Lysosomes).</td>
+              </tr>
+
+              <tr class="hover:bg-slate-900/50 transition">
+                <td class="p-4 font-bold text-white">Ribosome Size</td>
+                <td class="p-4"><span class="sci-term" data-ar="ريبوسومات 70S" data-desc="ريبوسومات البكتيريا تتكون من وحدتين فرعيتين 30S و 50S، وتعد هدفاً رئيسياً للمضادات الحيوية كالتتراسيكلين.">70S Ribosomes</span> (30S + 50S subunits).</td>
+                <td class="p-4"><span class="sci-term" data-ar="ريبوسومات 80S" data-desc="ريبوسومات خلايا حقيقيات النواة وتتكون من وحدتين فرعيتين 40S و 60S.">80S Ribosomes</span> (40S + 60S subunits in cytoplasm).</td>
+              </tr>
+
+              <tr class="hover:bg-slate-900/50 transition">
+                <td class="p-4 font-bold text-white">Cell Wall Chemical Composition</td>
+                <td class="p-4">Contains <span class="sci-term" data-ar="ببتيدوجليكان (مورين)" data-desc="شبكة معقدة من سكريات عديدة تتخللها سلاسل ببتيدية متقاطعة تعطي الخلية البكتيرية شكلها وصلابتها.">peptidoglycan</span> (except Mycoplasmas & Archaea).</td>
+                <td class="p-4">No peptidoglycan; contains cellulose (plants) or chitin (fungi).</td>
+              </tr>
+
+              <tr class="hover:bg-slate-900/50 transition">
+                <td class="p-4 font-bold text-white">Plasma Membrane Lipids</td>
+                <td class="p-4">Lacks <span class="sci-term" data-ar="ستيرولات الخلية" data-desc="مركبات دهنية كالستيرول وغشائها غير موجود في غالبية البكتيريا (باستثناء الميكوبلازما).">sterols</span> (except Mycoplasma species).</td>
+                <td class="p-4">Contains sterols (cholesterol in animal cells, ergosterol in fungi).</td>
+              </tr>
+
+              <tr class="hover:bg-slate-900/50 transition">
+                <td class="p-4 font-bold text-white">Locomotion Structures</td>
+                <td class="p-4">Submicroscopic flagella made of <span class="sci-term" data-ar="بروتين الفلاجيلين" data-desc="البروتين الكروي المكون لخيوط أسواط البكتيريا.">flagellin</span> (rotates like a propeller).</td>
+                <td class="p-4">Complex cilia and flagella containing 9+2 microtubule pattern.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- TAB 3: CELL ENVELOPE & WALL -->
+    <section id="tab-envelope" class="tab-content hidden space-y-8">
+      
+      <div class="glass-card p-8 rounded-3xl border border-emerald-500/20 bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-950/40">
+        <div class="max-w-3xl space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-shield-halved"></i> Section 3: Prokaryotic Cell Envelope
+          </div>
+          <h2 class="text-3xl font-extrabold text-white">The Cell Wall & Plasma Membrane Structure</h2>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            The bacterial cell envelope consists of the 
+            <span class="sci-term" data-ar="الغشاء الهيولي (البلازمي)" data-desc="غشاء بوليبروتيني كاره للماء ينظم دخول وخروج المواد ويحافظ على الضغط الأسموزي للخلية.">plasma membrane</span>, 
+            the 
+            <span class="sci-term" data-ar="الجدار الخلوي البكتيري" data-desc="طبقة صلبة تحيط بالغشاء البلازمي لحماية البكتيريا من الضغط الأسموزي الداخلي العالي وتحديد شكلها المورفولوجي.">cell wall</span>, 
+            and in Gram-negative bacteria, an 
+            <span class="sci-term" data-ar="الغشاء الخارجي" data-desc="غشاء إضافي غني بالدهون السكرية يحمي البكتيريا سالبة الجرام من المضادات الحيوية والمواد السامة.">outer membrane</span>.
+          </p>
+        </div>
+      </div>
+
+      <!-- GRAM POSITIVE VS GRAM NEGATIVE CARDS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <!-- GRAM-POSITIVE CELL WALL -->
+        <div class="glass-card p-6 rounded-2xl border-t-4 border-t-purple-500 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-bold text-purple-300 flex items-center gap-2">
+              <i class="fa-solid fa-[#8b5cf6] fa-circle"></i> Gram-Positive Cell Wall
+            </h3>
+            <span class="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs font-mono font-bold">Stains Purple</span>
+          </div>
+
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Consists of a thick, multi-layered <span class="sci-term" data-ar="طبقة الببتيدوجليكان السميكة" data-desc="طبقة تتكون من 20 إلى 80 نانومتر من السكريات المتقاطعة تحبس صبغة الكريستال البنفسجي أثناء التلوين.">peptidoglycan mesh</span> (up to 80 nm thick) outside the plasma membrane.
+          </p>
+
+          <div class="space-y-3 bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-xs">
+            <h4 class="font-bold text-purple-400 uppercase tracking-wider text-[11px]">Key Chemical Components:</h4>
+            <ul class="space-y-2 text-slate-300">
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-check text-purple-400 mt-0.5"></i>
+                <span><strong class="text-white">Peptidoglycan (Murein):</strong> Polymers of alternating <span class="sci-term" data-ar="N-أستيل جلوكوزأمين (NAG)" data-desc="سكر أحادي مشتق يشكل مع NAM السلسلة السكرية الرئيسية للببتيدوجليكان.">N-acetylglucosamine (NAG)</span> and <span class="sci-term" data-ar="N-أستيل حمض الموراميك (NAM)" data-desc="حمض سكري ترتبط به السلسلة الببتيدية المربعة في الببتيدوجليكان.">N-acetylmuramic acid (NAM)</span>.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-check text-purple-400 mt-0.5"></i>
+                <span><strong class="text-white">Teichoic Acid:</strong> Polyol phosphate polymers covalently linked to peptidoglycan; acts as major surface antigens.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-check text-purple-400 mt-0.5"></i>
+                <span><strong class="text-white">Lipoteichoic Acid (LTA):</strong> Teichoic acids anchored directly into the glycolipids of the underlying cytoplasmic membrane; triggers host inflammatory responses.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- GRAM-NEGATIVE CELL WALL -->
+        <div class="glass-card p-6 rounded-2xl border-t-4 border-t-rose-500 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-bold text-rose-300 flex items-center gap-2">
+              <i class="fa-solid fa-[#f43f5e] fa-circle"></i> Gram-Negative Cell Wall
+            </h3>
+            <span class="px-3 py-1 bg-rose-500/20 text-rose-300 rounded-full text-xs font-mono font-bold">Stains Pink/Red</span>
+          </div>
+
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Consists of a thin peptidoglycan layer (1-3 nm) surrounded by a complex asymmetric <span class="sci-term" data-ar="الغشاء الخارجي لسالبات الجرام" data-desc="غشاء مزدوج يحتوي غلافه الخارجي على الدهون السكرية السامة (LPS) المسببة للصدمة الإنتانية.">outer membrane</span> separated by the <span class="sci-term" data-ar="الفضاء المحيط بالهيولي (البيريبلازم)" data-desc="حيز جليني مائي يقع بين الغشاء الداخلي والغشاء الخارجي يضم إنزيمات حيوية مثل البنسلينيز وبروتينات النقل.">periplasmic space</span>.
+          </p>
+
+          <div class="space-y-3 bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-xs">
+            <h4 class="font-bold text-rose-400 uppercase tracking-wider text-[11px]">Key Chemical Components:</h4>
+            <ul class="space-y-2 text-slate-300">
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-check text-rose-400 mt-0.5"></i>
+                <span><strong class="text-white">Lipopolysaccharide (LPS / Endotoxin):</strong> Located in outer leaflet of outer membrane. Contains 
+                  <span class="sci-term" data-ar="الدهن A (السم الداخلي)" data-desc="الجزء المائل للدهون في LPS والمستقر داخل الغشاء، وهو المسؤول المباشر عن الحمى والصدمة السمية الإنتانية.">Lipid A</span> (toxic anchor), 
+                  Core Polysaccharide, and 
+                  <span class="sci-term" data-ar="المستضد O السطحي" data-desc="سلسلة سكرية خارجية متكررة تختلف بين السلالات البكتيرية وتستجيب لها الأجسام المضادة.">O-Antigen repeats</span>.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-check text-rose-400 mt-0.5"></i>
+                <span><strong class="text-white">Porins:</strong> Transmembrane protein channels that permit passive diffusion of hydrophilic molecules (sugars, amino acids) into the periplasm.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-check text-rose-400 mt-0.5"></i>
+                <span><strong class="text-white">Periplasmic Enzymes:</strong> Contains <span class="sci-term" data-ar="إنزيمات بيتا لاكتاماز" data-desc="إنزيمات تفرزها البكتيريا في البيريبلازم لتكسير حلقة البنسلين والمضادات الحيوية قبل وصولها لهدفها.">β-lactamases</span> that destroy penicillin and cephalosporins.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- OTHER CELL WALL VARIANTS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="glass-card p-6 rounded-2xl border border-amber-500/30 space-y-2">
+          <h4 class="font-bold text-amber-300 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-fire text-amber-400"></i> Acid-Fast Cell Wall (Mycobacteria)
+          </h4>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Contains a rich waxy outer layer composed of <span class="sci-term" data-ar="أحماض الميكوليك الدهنية" data-desc="أحماض دهنية طويلة السلسلة تجعل غلاف المتفطرات مقاومًا للمطهرات والصبغات المائية والحمض.">mycolic acids</span>, arabinogalactan, and waxes. Makes <span class="sci-term" data-ar="جنس المتفطرة (الميكوباكتيريوم)" data-desc="بكتيريا مسببة للسل والجدام وتتميز بجدار خلوي شمعي يقاوم التلوين العادي كصبغة جرام.">Mycobacterium species</span> extremely resistant to drying, chemicals, and standard Gram staining (requires Acid-Fast staining).
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-cyan-500/30 space-y-2">
+          <h4 class="font-bold text-cyan-300 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-ghost text-cyan-400"></i> Cell Wall-Deficient Bacteria & L-Forms
+          </h4>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            <span class="sci-term" data-ar="بكتيريا الميكوبلازما" data-desc="بكتيريا طبيعية تفتقر تماماً للجدار الخلوي وتستعيض عنه بستيرولات حيوية في غشائها البلازمي للحفاظ على مرونتها.">Mycoplasma species</span> naturally lack a cell wall and contain sterols in their membrane. 
+            <span class="sci-term" data-ar="أشكال L البكتيرية" data-desc="طفرات بكتيرية فقدت جدارها الخلوي بسبب التعرض للبنسلين ولكنها تستطيع البقاء والنمو في بيئة أسموزية متوازنة.">L-forms</span> are cell wall-deficient mutants produced in laboratory conditions or antibiotic exposure (<span class="sci-term" data-ar="البروتوبلاست" data-desc="خلية موجبة الجرام تم تجريدها بالكامل من جدارها الخلوي بوساطة إنزيم الليسوزيم.">protoplasts</span> and <span class="sci-term" data-ar="السبيروبلاست" data-desc="خلية سالبة الجرام احتفظت ببعض بقايا غشائها الخارجي بعد إزالة جدار الببتيدوجليكان.">spheroplasts</span>).
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- TAB 4: INTERNAL STRUCTURES & APPENDAGES -->
+    <section id="tab-appendages" class="tab-content hidden space-y-8">
+      
+      <div class="glass-card p-8 rounded-3xl border border-purple-500/20 bg-gradient-to-r from-slate-900 via-slate-900 to-purple-950/40">
+        <div class="max-w-3xl space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-microchip"></i> Section 4: Internal Structures & Surface Extras
+          </div>
+          <h2 class="text-3xl font-extrabold text-white">Prokaryotic Cytoplasm & Surface Appendages</h2>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            Despite their simple organization, prokaryotic cells possess specialized internal inclusions, nucleoid DNA, plasmids, and external structures like 
+            <span class="sci-term" data-ar="الأسواط البكتيرية" data-desc="زائدات خيطية دوارة تمنح البكتيريا القدرة على الحركة والانجذاب الكيميائي نحو المغذيات.">flagella</span>, 
+            <span class="sci-term" data-ar="الشعيرات (الأهداب البكتيرية)" data-desc="بروتينات دقيقة قصيرة تخرج من السطح البكتيري لتسهيل الالتصاق بأنسجة المضيف والاقتران الجيني.">pili</span>, and 
+            <span class="sci-term" data-ar="الأبواغ الداخلية" data-desc="بنيات خلوية ساكنة شديدة المقاومة للحرارة والجفاف والجفاف والمطهرات تشكلها بكتيريا العصويات والكلوسترديوم عند نقص المغذيات.">endospores</span>.
+          </p>
+        </div>
+      </div>
+
+      <!-- CARDS FOR APPENDAGES & INCLUSIONS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Flagella -->
+        <div class="glass-card p-6 rounded-2xl space-y-3 border-l-4 border-l-cyan-500">
+          <h3 class="font-bold text-lg text-cyan-300 flex items-center justify-between">
+            <span>Bacterial Flagella</span>
+            <i class="fa-solid fa-wind text-cyan-400"></i>
+          </h3>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Helical appendages composed of <span class="sci-term" data-ar="بروتين الفلاجيلين" data-desc="البروتين الحركي المعقد المكون لخيط السوط البكتيري.">flagellin</span> protein attached to a <span class="sci-term" data-ar="الجسيم القاعدي للسوط" data-desc="محرك روتاري بيولوجي مغروس في غشاء الخلية يستمد قوته من تدفق البروتونات (الجهد الكهرومغناطيسي).">basal body</span> that acts as a rotary motor. Enables <span class="sci-term" data-ar="الانجذاب الكيميائي (التكتيك الكيميائي)" data-desc="حركة البكتيريا الموجهة نحو المواد الجاذبة (كالمغذيات) أو الابتعاد عن المواد السامة.">chemotaxis</span>.
+          </p>
+          <div class="text-[11px] bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1 font-mono text-slate-400">
+            <div>• <strong>Monotrichous:</strong> Single polar flagellum</div>
+            <div>• <strong>Lophotrichous:</strong> Tuft of flagella at one pole</div>
+            <div>• <strong>Peritrichous:</strong> Flagella all over cell surface</div>
+          </div>
+        </div>
+
+        <!-- Pili / Fimbriae -->
+        <div class="glass-card p-6 rounded-2xl space-y-3 border-l-4 border-l-purple-500">
+          <h3 class="font-bold text-lg text-purple-300 flex items-center justify-between">
+            <span>Pili & Fimbriae</span>
+            <i class="fa-solid fa-[#8b5cf6]"></i>
+          </h3>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Hair-like appendages made of <span class="sci-term" data-ar="بروتين البيلين" data-desc="البروتين الهيكلي المكون للشعيرات البكتيرية.">pilin</span> subunit proteins.
+          </p>
+          <ul class="text-xs text-slate-300 space-y-2">
+            <li>• <strong class="text-white">Ordinary Pili (Fimbriae):</strong> Mediate adherence to host cell receptors (colonization factor).</li>
+            <li>• <strong class="text-white">Sex Pili (F-Pili):</strong> Form conjugation tubes for horizontal transfer of <span class="sci-term" data-ar="البلازميدات" data-desc="جزيئات حمض نووي دائرية إضافية تحمل جينات مقاومة المضادات الحيوية وتنتقل بين البكتيريا.">plasmids</span> between bacteria.</li>
+          </ul>
+        </div>
+
+        <!-- Endospores -->
+        <div class="glass-card p-6 rounded-2xl space-y-3 border-l-4 border-l-rose-500">
+          <h3 class="font-bold text-lg text-rose-300 flex items-center justify-between">
+            <span>Bacterial Endospores</span>
+            <i class="fa-solid fa-shield-virus text-rose-400"></i>
+          </h3>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Dormant, highly resistant structures produced by <span class="sci-term" data-ar="جنس العصويات (Bacillus)" data-desc="بكتيريا متجرثمة هوائية تشمل المسببة للجمرة الخبيثة.">Bacillus</span> and <span class="sci-term" data-ar="جنس الكلسترياديوم (Clostridium)" data-desc="بكتيريا متجرثمة لا هوائية تشمل المسببة للكزاز والتسمم الممباري.">Clostridium</span> species during nutrient starvation.
+          </p>
+          <div class="text-[11px] bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1 font-mono text-slate-400">
+            <div><strong class="text-rose-400">Heat Resistance Key:</strong> High levels of <span class="sci-term" data-ar="ديبكولينات الكالسيوم" data-desc="مركب كيميائي فريد يتراكم في لب الأبواغ البكتيرية لمنحها مقاومة هائلة للحرارة والأشعة.">calcium dipicolinate</span> (dipicolinic acid) and dehydrated core.</div>
+          </div>
+        </div>
+
+        <!-- Capsules & Glycocalyx -->
+        <div class="glass-card p-6 rounded-2xl space-y-3 border-l-4 border-l-emerald-500">
+          <h3 class="font-bold text-lg text-emerald-300 flex items-center justify-between">
+            <span>Capsule & Slime Layer</span>
+            <i class="fa-solid fa-cubes-stacked text-emerald-400"></i>
+          </h3>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Viscous polysaccharide layer outside the cell wall. Protects pathogenic bacteria against <span class="sci-term" data-ar="البلعمة (Phagocytosis)" data-desc="عملية ابتلاع وتدمير الميكروبات بواسطة خلايا الدم البيضاء كالمحبات والبلعميات الكبيرة.">phagocytosis</span> by host immune cells (e.g., <span class="sci-term" data-ar="المكورات الرئوية" data-desc="بكتيريا كبسولية مسببة لالتهاب الرئة والتهاب السحايا.">Streptococcus pneumoniae</span>).
+          </p>
+        </div>
+
+        <!-- Storage Granules & PHB -->
+        <div class="glass-card p-6 rounded-2xl space-y-3 border-l-4 border-l-amber-500">
+          <h3 class="font-bold text-lg text-amber-300 flex items-center justify-between">
+            <span>Inclusion Bodies & PHB</span>
+            <i class="fa-solid fa-database text-amber-400"></i>
+          </h3>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Intracellular nutrient reserves. Include <span class="sci-term" data-ar="بوليمر حمض بيتا هيدروكسي بيوتيريك (PHB)" data-desc="بوليمر دهني يخزن الطاقة والكربون داخل البكتيريا ويظهر كحبيبات عند التلوين.">Poly-β-hydroxybutyric acid (PHB)</span> granules, polyphosphate (<span class="sci-term" data-ar="حبيبات الفولوتين (المتقلبة)" data-desc="حبيبات بوليفوسفات مخزنة للطاقة وتظهر بتلوين متباين اللون في بكتيريا الخناق.">volutin/metachromatic granules</span> in Corynebacterium), and glycogen.
+          </p>
+        </div>
+
+        <!-- Magnetosomes & Gas Vesicles -->
+        <div class="glass-card p-6 rounded-2xl space-y-3 border-l-4 border-l-indigo-500">
+          <h3 class="font-bold text-lg text-indigo-300 flex items-center justify-between">
+            <span>Magnetosomes & Gas Vesicles</span>
+            <i class="fa-solid fa-compass text-indigo-400"></i>
+          </h3>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            <span class="sci-term" data-ar="الجسيمات المغناطيسية" data-desc="حبيبات من بلورات أكسيد الحديد المغناطيسي (Fe3O4) تسمح للبكتيريا بالتوجيه مع المجال المغناطيسي للأرض.">Magnetosomes</span> contain magnetite crystals that guide aquatic bacteria down toward sediments. <span class="sci-term" data-ar="الحويصلات الغازية" data-desc="أكياس بروتينية مليئة بالغاز تسمح للبكتيريا المائية بالطفو والتعديل الهندسي لعمقها في الماء.">Gas vesicles</span> provide buoyancy in aquatic photosynthetic species.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- TAB 5: STAINING METHODS -->
+    <section id="tab-staining" class="tab-content hidden space-y-8">
+      
+      <div class="glass-card p-8 rounded-3xl border border-rose-500/20 bg-gradient-to-r from-slate-900 via-slate-900 to-rose-950/40">
+        <div class="max-w-3xl space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-flask-vial"></i> Section 5: Microbiological Staining Procedures
+          </div>
+          <h2 class="text-3xl font-extrabold text-white">Gram Stain & Diagnostic Staining Techniques</h2>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            Because bacteria are virtually transparent in aqueous suspension, staining is crucial for morphological classification. The 
+            <span class="sci-term" data-ar="تلوين جرام (صبغة جرام)" data-desc="أهم تقنية تلوين تفريقية في علم الجراثيم تقسم البكتيريا إلى موجبة الجرام (بنفسجية) وسالبة الجرام (وردية).">Gram stain</span> 
+            developed by Christian Gram in 1884 remains the most important differential stain in clinical microbiology.
+          </p>
+        </div>
+      </div>
+
+      <!-- GRAM STAIN STEP BY STEP INTERACTIVE FLOW -->
+      <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-6">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-list-check text-rose-400"></i> The Gram Stain Procedure & Mechanism
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          
+          <!-- Step 1 -->
+          <div class="bg-slate-950 p-5 rounded-xl border border-purple-500/30 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="w-7 h-7 rounded-full bg-purple-500 text-white font-mono font-bold text-xs flex items-center justify-center">1</span>
+              <span class="text-[10px] font-mono text-purple-400 uppercase font-bold">Primary Stain</span>
+            </div>
+            <h4 class="font-bold text-sm text-purple-300">Crystal Violet</h4>
+            <p class="text-slate-400 text-xs leading-relaxed">
+              Applied for 1 minute. Stains all bacterial cells a deep purple color by penetrating peptidoglycan.
+            </p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="bg-slate-950 p-5 rounded-xl border border-amber-500/30 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="w-7 h-7 rounded-full bg-amber-500 text-slate-950 font-mono font-bold text-xs flex items-center justify-center">2</span>
+              <span class="text-[10px] font-mono text-amber-400 uppercase font-bold">Mordant</span>
+            </div>
+            <h4 class="font-bold text-sm text-amber-300">Gram's Iodine</h4>
+            <p class="text-slate-400 text-xs leading-relaxed">
+              Applied for 1 minute. Forms a large insoluble <span class="sci-term" data-ar="معقد اليود والكريستال البنفسجي" data-desc="مركب كيميائي ضخم الحجم يتحجز داخل مسامات الببتيدوجليكان السميكة.">CV-Iodine complex</span> inside peptidoglycan.
+            </p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="bg-slate-950 p-5 rounded-xl border border-cyan-500/30 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="w-7 h-7 rounded-full bg-cyan-500 text-slate-950 font-mono font-bold text-xs flex items-center justify-center">3</span>
+              <span class="text-[10px] font-mono text-cyan-400 uppercase font-bold">Decolorizer</span>
+            </div>
+            <h4 class="font-bold text-sm text-cyan-300">95% Ethanol / Acetone</h4>
+            <p class="text-slate-400 text-xs leading-relaxed">
+              Critical step (10-15 sec). Dissolves lipid outer membrane in Gram-negatives and washes out CV-I. Gram-positives retain CV-I due to dehydrated thick mesh.
+            </p>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="bg-slate-950 p-5 rounded-xl border border-rose-500/30 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="w-7 h-7 rounded-full bg-rose-500 text-white font-mono font-bold text-xs flex items-center justify-center">4</span>
+              <span class="text-[10px] font-mono text-rose-400 uppercase font-bold">Counterstain</span>
+            </div>
+            <h4 class="font-bold text-sm text-rose-300">Safranin</h4>
+            <p class="text-slate-400 text-xs leading-relaxed">
+              Applied for 1 minute. Stains decolorized Gram-negative cells pink/red, while Gram-positive cells remain purple.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- OTHER DIAGNOSTIC STAINS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-2">
+          <h4 class="font-bold text-rose-300 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-fire-flame-curved text-rose-400"></i> Acid-Fast Stain (Ziehl-Neelsen)
+          </h4>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Uses <span class="sci-term" data-ar="صبغة الكاربول فوشين" data-desc="صبغة حمراء حمضية قادرة على اختراق جدار المتفطرات الشمعي عند التسخين.">carbolfuchsin</span> with heat to penetrate waxy mycolic acid walls. Resists decolorization with acid-alcohol. Acid-fast organisms stain bright red; background stains blue with methylene blue.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-2">
+          <h4 class="font-bold text-emerald-300 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-[#10b981] fa-circle-dot"></i> Endospore Stain (Schaeffer-Fulton)
+          </h4>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Uses <span class="sci-term" data-ar="صبغة الأخضر المالاكيت" data-desc="صبغة تخترق غلاف الأبواغ السميك عند التسخين بالبخار.">malachite green</span> driven into spores with heat/steam. Vegetative cells are counterstained with safranin. Spores appear green; vegetative cells appear pink.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-2">
+          <h4 class="font-bold text-indigo-300 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-droplet text-indigo-400"></i> Capsule Stain (Negative Staining)
+          </h4>
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Uses <span class="sci-term" data-ar="الحبر الهندي (حبر إنديا)" data-desc="معلق حبري دقيق يعتم الخلفية ويترك الكبسولة الهلامية غير الملونة كهالة مضاءة حول الخلية.">India Ink</span> or nigrosin. Background becomes dark gray/black, while capsules stand out as clear unstained halos surrounding colored bacterial bodies.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- TAB 6: FULL ARABIC MEDICAL GLOSSARY & SEARCH DATABASE -->
+    <section id="tab-glossary" class="tab-content hidden space-y-6">
+      
+      <div class="glass-card p-8 rounded-3xl border border-amber-500/20 bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/40">
+        <div class="max-w-3xl space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-database"></i> Section 6: Interactive Glossary Engine
+          </div>
+          <h2 class="text-3xl font-extrabold text-white">Full Medical Glossary - Chapter 2 Cell Structure</h2>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            A comprehensive, searchable index of all scientific terms, cell structures, and staining reagents featured in Chapter 2 with full English terms, Arabic translations, and detailed explanations.
+          </p>
+        </div>
+      </div>
+
+      <!-- SEARCH BAR -->
+      <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center gap-3">
+        <i class="fa-solid fa-magnifying-glass text-slate-400 text-lg"></i>
+        <input type="text" id="glossary-search" oninput="filterGlossary()" placeholder="Search terms in English or Arabic (e.g. Peptidoglycan, الببتيدوجليكان, Endospore, LPS)..." class="bg-transparent text-sm w-full text-white focus:outline-none placeholder-slate-500">
+        <span id="glossary-count" class="text-xs font-mono text-cyan-400 bg-slate-950 px-3 py-1 rounded-lg border border-slate-800 whitespace-nowrap">28 Terms Loaded</span>
+      </div>
+
+      <!-- GLOSSARY CARDS GRID -->
+      <div id="glossary-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Javascript populated -->
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- FOOTER -->
+  <footer class="glass-card border-t border-slate-800 mt-12 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-6 flex flex-wrap items-center justify-between gap-4">
+      <div>Jawetz, Melnick & Adelberg's Medical Microbiology (28th Edition) • Chapter 2 Interactive Web Application</div>
+      <div class="font-mono text-cyan-400">Pro Max Scroll & Click-to-Translate Engine v2026.8</div>
+    </div>
+  </footer>
+
+
+  <!-- INTERACTIVE POPUP / MODAL FOR GLOSSINA-STYLE CLICK-TO-TRANSLATE -->
+  <div id="term-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden">
+    <div class="glass-card max-w-lg w-full p-6 rounded-3xl border border-cyan-500/40 shadow-2xl relative animate-modal space-y-4">
+      
+      <button onclick="closeTermModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-start gap-3">
+        <div class="p-3 rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-indigo-500/20 text-cyan-400 border border-cyan-500/30 text-xl">
+          <i class="fa-solid fa-book-medical"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-mono text-cyan-400 uppercase tracking-wider font-bold">Scientific Term Definition</span>
+          <h3 id="modal-term-en" class="text-xl font-black text-white">Term Name</h3>
+        </div>
+      </div>
+
+      <div class="bg-slate-950/90 p-4 rounded-2xl border border-slate-800 space-y-2">
+        <div class="text-xs text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
+          <i class="fa-solid fa-language text-emerald-400"></i>
+          الترجمة العربية:
+        </div>
+        <div id="modal-term-ar" class="text-lg font-bold font-arabic text-emerald-300">الترجمة بانتظار التحميل</div>
+      </div>
+
+      <div class="space-y-1">
+        <div class="text-xs text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
+          <i class="fa-solid fa-circle-info text-cyan-400"></i>
+          الشرح الطبي المفضل بالعربية:
+        </div>
+        <p id="modal-term-desc" class="text-xs text-slate-300 font-arabic leading-relaxed bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
+          هنا يظهر الشرح الطبي والوظيفة الخلوية بالتفصيل المريح للقارئ.
+        </p>
+      </div>
+
+      <div class="pt-2 flex justify-end">
+        <button onclick="closeTermModal()" class="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition">
+          فهمت ذلك (إغلاق)
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // Full Glossary Database Array
+    const glossaryData = [
+      { en: "Light Microscope", ar: "المجهر الضوئي", desc: "مجهر بصر يعتمد على الضوء المرئي والعدسات التكبيرية لتكبير العينات حتى 1000-2000 مرة." },
+      { en: "Electron Microscope", ar: "المجهر الإلكتروني", desc: "مجهر يستبدل الضوء بحزمة إلكترونات والعدسات بالملفات الكهرومغناطيسية لدراسة الفيروسات وعضيات الخلية بدقة نانومترية." },
+      { en: "Phase-Contrast Microscope", ar: "مجهر تباين الأطوار", desc: "مجهر يحول الاختلافات الضئيلة في معامل انكسار الضوء عبر أجزاء الخلية الحية إلى فروق في الشدة لرؤية العينات الحية دون تصبيغ." },
+      { en: "Fluorescence Microscope", ar: "المجهر التألقي (الفلوريسي)", desc: "مجهر يستخدم الأشعة فوق البنفسجية لإثارة صبغات تألقية مرتبطة بأسواط أو أجسام مضادة لتحديد الميكروبات." },
+      { en: "Eukaryotes", ar: "حقيقيات النواة", desc: "خلايا تضم نواة حقيقية محاطة بغشاء نووي وعضيات مغلفة كالمايتوكندريا وجهاز جولجي والريبوسومات 80S." },
+      { en: "Prokaryotes", ar: "بدائيات النواة", desc: "كائنات دقيقة كالبكتيريا تفتقر لنواة حقيقية وعضيات غشائية ويقع حمضها النووي الدائري مباشرة في الهيولى." },
+      { en: "Nucleoid", ar: "المنطقة النووية (النوييد)", desc: "منطقة غير مغلفة بغشاء في هيولى البكتيريا تضم الكروموسوم البكتيري الدائري المزدوج." },
+      { en: "70S Ribosome", ar: "ريبوسومات 70S", desc: "ريبوسومات بكتيرية تتكون من وحدتين 30S و 50S وتعد هدفاً نوعياً للعديد من المضادات الحيوية." },
+      { en: "Peptidoglycan (Murein)", ar: "الببتيدوجليكان (المورين)", desc: "شبكة بوليمرية من سكريات عديدة (NAG و NAM) متقاطعة ببتيدياً تشكل صلب الجدار الخلوي البكتيري." },
+      { en: "N-acetylglucosamine (NAG)", ar: "N-أستيل جلوكوزأمين", desc: "سكر أحادي مشتق يشكل مع NAM السلسلة السكرية المتبادلة للببتيدوجليكان." },
+      { en: "N-acetylmuramic acid (NAM)", ar: "N-أستيل حمض الموراميك", desc: "سكر حمضي فريد في جدار الجراثيم ترتبط به السلاسل الببتيدية المربعة Murein tetrapeptide." },
+      { en: "Gram-Positive Cell Wall", ar: "جدار موجب الجرام", desc: "جدار بكتيري سميك جداً من الببتيدوجليكان يحتوي أحماض التيكويك والليبوتيكويك ويحتفظ باللون البنفسجي." },
+      { en: "Gram-Negative Cell Wall", ar: "جدار سالب الجرام", desc: "جدار بكتيري يضم طبقة رقيقة من الببتيدوجليكان محاطة بغشاء خارجي غني بالدهون السكرية (LPS)." },
+      { en: "Lipopolysaccharide (LPS)", ar: "الدهون السكرية العديدة (السم الداخلي)", desc: "مركب خارجي في بكتيريا سالب الجرام يحتوي الدهن A المسؤول عن الصدمة الإنتانية والحمى." },
+      { en: "Lipid A", ar: "الدهن A", desc: "المكون السام المباشر للسم الداخلي (LPS) والمحفز القوي للسيتوكينات والتهابات مجرى الدم." },
+      { en: "Teichoic Acid", ar: "حمض التيكويك", desc: "بوليمرات كحولية فوسفاتية ترتبط بجدار بكتيريا موجب الجرام وتعمل كمستضدات سطحية رئيسية." },
+      { en: "Periplasmic Space", ar: "الفضاء المحيط بالهيولي (البيريبلازم)", desc: "حيز جليني بين الغشاء الداخلي والخارجي للبكتيريا سالبة الجرام يضم إنزيمات التكسير والنقل." },
+      { en: "Mycolic Acid", ar: "حمض الميكوليك", desc: "أحماض دهنية شمعية طويلة السلسلة تجعل جدار بكتيريا السل (Mycobacteria) مقاوماً للصبغات والمطهرات." },
+      { en: "Mycoplasma", ar: "بكتيريا الميكوبلازما", desc: "أصغر البكتيريا حجماً وتفتقر تماماً للجدار الخلوي وتحتوي أغشيتها البلازمية على الستيرول." },
+      { en: "Flagella", ar: "الأسواط البكتيرية", desc: "زائدات بروتينية خيطية دوارة تتكون من بروتين الفلاجيلين وتوفر الحركة والانجذاب الكيميائي." },
+      { en: "Pili / Fimbriae", ar: "الشعيرات البكتيرية (الأهداب)", desc: "بروتينات دقيقة تسهل التصاق البكتيريا بأنسجة المضيف والاقتران الجيني الأفقي (Sex Pili)." },
+      { en: "Capsule", ar: "الكبسولة البكتيرية", desc: "غلاف سكري هلامي محيط بالجدار الخلوي يحمي البكتيريا الممرضة من البلعمة المناعية." },
+      { en: "Endospore", ar: "البوغ الداخلي", desc: "بنية خلوية ساكنة شديدة المقاومة للحرارة والجفاف والمطهرات تتكون عند نقص المغذيات في العصويات." },
+      { en: "Dipicolinic Acid", ar: "حمض الديبكولينيك", desc: "مركب كيميائي فريد يتحد مع الكالسيوم داخل لُب الأبواغ لمنحها المقاومة الحرارية الفائقة." },
+      { en: "Gram Stain", ar: "تلوين جرام", desc: "أهم صبغة تفريقية في الأحياء الدقيقة تقسم البكتيريا لموجبة (بنفسجية) وسالبة (وردية)." },
+      { en: "Acid-Fast Stain", ar: "التلوين المقاوم للحمض (زييل-نيلسن)", desc: "تقنية تصبيغ حارة تخترق جدار المتفطرات الشمعي لتشخيص مرض السل والجذام." },
+      { en: "Poly-β-hydroxybutyrate (PHB)", ar: "بوليمر بيتا هيدروكسي بيوتيريك", desc: "مادة ذخيرة كربونية ودهنية تتجمع كحبيبات ادخارية داخل هيولى البكتيريا." },
+      { en: "Plasmids", ar: "البلازميدات", desc: "جزيئات DNA دائرية صغيرة خارج الكروموسوم تحمل جينات إضافية كمقاومة المضادات الحيوية." }
+    ];
+
+    let freeTranslateMode = true;
+
+    // Initialize Page
+    document.addEventListener("DOMContentLoaded", () => {
+      renderGlossaryGrid(glossaryData);
+      setupScientificTermsEvents();
+    });
+
+    // Tab Switching Function
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+      document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+
+      document.getElementById(tabId).classList.remove("hidden");
+      document.getElementById("btn-" + tabId).classList.add("active");
+    }
+
+    // Attach Click Handler to Scientific Terms
+    function setupScientificTermsEvents() {
+      document.querySelectorAll(".sci-term").forEach(el => {
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const termEn = el.innerText.trim();
+          const termAr = el.getAttribute("data-ar") || "ترجمة علمية";
+          const termDesc = el.getAttribute("data-desc") || "شرح متاح في قاعدة البيانات.";
+          openTermModal(termEn, termAr, termDesc);
+        });
+      });
+    }
+
+    // Open Modal
+    function openTermModal(en, ar, desc) {
+      document.getElementById("modal-term-en").innerText = en;
+      document.getElementById("modal-term-ar").innerText = ar;
+      document.getElementById("modal-term-desc").innerText = desc;
+      document.getElementById("term-modal").classList.remove("hidden");
+    }
+
+    // Close Modal
+    function closeTermModal() {
+      document.getElementById("term-modal").classList.add("hidden");
+    }
+
+    // Toggle Free Translation Mode
+    function toggleFreeTranslateMode() {
+      freeTranslateMode = !freeTranslateMode;
+      const statusEl = document.getElementById("translate-mode-status");
+      statusEl.innerText = freeTranslateMode ? "Active" : "Disabled";
+      statusEl.className = freeTranslateMode ? "text-emerald-400" : "text-rose-400";
+    }
+
+    // Render Glossary Grid
+    function renderGlossaryGrid(data) {
+      const grid = document.getElementById("glossary-grid");
+      grid.innerHTML = "";
+
+      data.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "glass-card p-5 rounded-2xl border border-slate-800 space-y-2 hover:border-cyan-500/30 transition cursor-pointer";
+        card.onclick = () => openTermModal(item.en, item.ar, item.desc);
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-white text-sm">${item.en}</h4>
+            <span class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 text-xs"><i class="fa-solid fa-bookmark"></i></span>
+          </div>
+          <div class="text-xs font-bold text-emerald-400 font-arabic">${item.ar}</div>
+          <p class="text-[11px] text-slate-400 font-arabic line-clamp-2 leading-relaxed">${item.desc}</p>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      document.getElementById("glossary-count").innerText = `${data.length} Terms Loaded`;
+    }
+
+    // Filter Glossary
+    function filterGlossary() {
+      const query = document.getElementById("glossary-search").value.toLowerCase().trim();
+      const filtered = glossaryData.filter(item => 
+        item.en.toLowerCase().includes(query) || 
+        item.ar.includes(query) || 
+        item.desc.includes(query)
+      );
+      renderGlossaryGrid(filtered);
+    }
+  </script>
+
+</body>
+</html>
